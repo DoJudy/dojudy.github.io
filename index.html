@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -56,13 +57,6 @@
     .btn.ready {
       pointer-events: auto;
       opacity: 1;
-    }
-
-    .title {
-      text-align: center;
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 10px;
     }
 
     .note {
@@ -127,8 +121,6 @@
 </head>
 <body>
   <div class="page">
-    <div id="title" class="title"></div>
-
     <div class="actions">
       <a id="openBtn" class="btn" href="#" target="_blank" rel="noopener noreferrer">Open PDF</a>
       <a id="downloadBtn" class="btn secondary" href="#">Download</a>
@@ -148,7 +140,6 @@
 
     const viewer = document.getElementById("viewer");
     const status = document.getElementById("status");
-    const titleEl = document.getElementById("title");
     const noteEl = document.getElementById("note");
     const openBtn = document.getElementById("openBtn");
     const downloadBtn = document.getElementById("downloadBtn");
@@ -168,8 +159,6 @@
         throw new Error("config.json에 pdf 값이 없습니다.");
       }
 
-      // document.title = config.title || "CV";
-      // titleEl.textContent = config.title || "CV";
       noteEl.innerHTML = config.note || "";
 
       openBtn.href = pdfFile;
