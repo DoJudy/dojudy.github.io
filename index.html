@@ -45,11 +45,25 @@
       background: #222;
       text-align: center;
       min-width: 130px;
+      pointer-events: none;
+      opacity: 0.6;
     }
 
     .btn.secondary {
       background: #fff;
       color: #222;
+    }
+
+    .btn.ready {
+      pointer-events: auto;
+      opacity: 1;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
     }
 
     .note {
@@ -114,32 +128,32 @@
 </head>
 <body>
   <div class="page">
+    <div id="title" class="title"></div>
+
     <div class="actions">
-      <a class="btn" href="CV_Judy_Kim_20260323.pdf" target="_blank" rel="noopener noreferrer">Open PDF</a>
-      <a class="btn secondary" href="CV_Judy_Kim_20260323.pdf" download>Download</a>
+      <a id="openBtn" class="btn" href="#" target="_blank" rel="noopener noreferrer">Open PDF</a>
+      <a id="downloadBtn" class="btn secondary" href="#">Download</a>
     </div>
-    
+
     <div id="status" class="loading">PDF 불러오는 중...</div>
     <div id="viewer" class="viewer"></div>
-    
-    <div class="note">
-      브라우저 환경에 따라 표시가 불안정한 경우에는 <strong>Open PDF</strong> 버튼을 눌러 확인해 주세요.
-    </div>
+
+    <div id="note" class="note"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs" type="module"></script>
   <script type="module">
     import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-  
+
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
-  
+
     const viewer = document.getElementById("viewer");
     const status = document.getElementById("status");
-  
-    const openBtn = document.querySelector(".btn");
-    const downloadBtn = document.querySelector(".btn.secondary");
-  
+    const titleEl = document.getElementById("title");
+    const noteEl = document.getElementById("note");
+    const openBtn = document.getElementById("openBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+
     async function loadConfig() {
       const response = await fetch("config.json", { cache: "no-store" });
       if (!response.ok) {
@@ -147,55 +161,69 @@
       }
       return await response.json();
     }
-  
-    async function renderPDF(pdfFile) {
+
+    function applyConfig(config) {
+      const pdfFile = config.pdf;
+
+      if (!pdfFile) {
+        throw new Error("config.json에 pdf 값이 없습니다.");
+      }
+
+      document.title = config.title || "CV";
+      titleEl.textContent = config.title || "CV";
+      noteEl.innerHTML = config.note || "";
+
       openBtn.href = pdfFile;
+      openBtn.classList.add("ready");
+
       downloadBtn.href = pdfFile;
       downloadBtn.setAttribute("download", pdfFile);
-  
+      downloadBtn.classList.add("ready");
+
+      return pdfFile;
+    }
+
+    async function renderPDF(pdfFile) {
+      viewer.innerHTML = "";
+
       const loadingTask = pdfjsLib.getDocument(pdfFile);
       const pdf = await loadingTask.promise;
-  
+
       status.textContent = `총 ${pdf.numPages}페이지 불러오는 중...`;
-  
+
       for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
-  
+
         const unscaledViewport = page.getViewport({ scale: 1 });
         const containerWidth = Math.min(viewer.clientWidth || 900, 900);
         const scale = containerWidth / unscaledViewport.width;
         const viewport = page.getViewport({ scale });
-  
+
         const pageWrap = document.createElement("div");
         pageWrap.className = "pdf-page";
-  
+
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
-  
+
         canvas.width = Math.floor(viewport.width);
         canvas.height = Math.floor(viewport.height);
-  
+
         pageWrap.appendChild(canvas);
         viewer.appendChild(pageWrap);
-  
+
         await page.render({
           canvasContext: context,
           viewport
         }).promise;
       }
-  
+
       status.style.display = "none";
     }
-  
+
     async function init() {
       try {
         const config = await loadConfig();
-        const pdfFile = config.currentPdf;
-  
-        if (!pdfFile) {
-          throw new Error("config.json에 currentPdf 값이 없습니다.");
-        }
-  
+        const pdfFile = applyConfig(config);
         await renderPDF(pdfFile);
       } catch (err) {
         console.error(err);
@@ -206,7 +234,7 @@
         `;
       }
     }
-  
+
     init();
   </script>
 </body>
