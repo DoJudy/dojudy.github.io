@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,6 +41,7 @@
       border: 1px solid #222;
       color: #fff;
       background: #222;
+      text-align: center;
     }
 
     .btn.secondary {
@@ -62,14 +63,15 @@
       height: calc(100vh - 90px);
       border: 0;
       display: block;
+      background: #fff;
     }
 
-    .mobile-note {
-      display: none;
+    .note {
       text-align: center;
       color: #666;
       font-size: 14px;
-      padding: 8px 0 0;
+      padding: 4px 8px 0;
+      line-height: 1.5;
     }
 
     @media (max-width: 768px) {
@@ -77,23 +79,22 @@
         padding: 10px;
       }
 
-      .viewer-wrap {
-        display: none;
-      }
-
-      .mobile-note {
-        display: block;
+      .actions {
+        flex-direction: column;
+        align-items: center;
       }
 
       .btn {
         width: 100%;
         max-width: 280px;
-        text-align: center;
       }
 
-      .actions {
-        flex-direction: column;
-        align-items: center;
+      .viewer {
+        height: 75vh;
+      }
+
+      .note {
+        font-size: 13px;
       }
     }
   </style>
@@ -113,8 +114,9 @@
       </iframe>
     </div>
 
-    <div class="mobile-note">
-      On mobile, use <strong>Open PDF</strong> for the best full-screen viewing experience.
+    <div class="note">
+      모바일 환경에서는 브라우저 설정에 따라 PDF 미리보기가 정상 표시되지 않을 수 있습니다.<br>
+      화면이 비어 있거나 작게 보일 경우 <strong>Open PDF</strong> 버튼을 눌러 전체 화면으로 확인해 주세요.
     </div>
   </div>
 </body>
