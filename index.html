@@ -130,48 +130,73 @@
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs" type="module"></script>
   <script type="module">
     import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-
+  
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
-
-    const pdfUrl = "CV_Judy_Kim_20260323.pdf";
+  
     const viewer = document.getElementById("viewer");
     const status = document.getElementById("status");
-
-    async function renderPDF() {
+  
+    const openBtn = document.querySelector(".btn");
+    const downloadBtn = document.querySelector(".btn.secondary");
+  
+    async function loadConfig() {
+      const response = await fetch("config.json", { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("config.json을 불러오지 못했습니다.");
+      }
+      return await response.json();
+    }
+  
+    async function renderPDF(pdfFile) {
+      openBtn.href = pdfFile;
+      downloadBtn.href = pdfFile;
+      downloadBtn.setAttribute("download", pdfFile);
+  
+      const loadingTask = pdfjsLib.getDocument(pdfFile);
+      const pdf = await loadingTask.promise;
+  
+      status.textContent = `총 ${pdf.numPages}페이지 불러오는 중...`;
+  
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+  
+        const unscaledViewport = page.getViewport({ scale: 1 });
+        const containerWidth = Math.min(viewer.clientWidth || 900, 900);
+        const scale = containerWidth / unscaledViewport.width;
+        const viewport = page.getViewport({ scale });
+  
+        const pageWrap = document.createElement("div");
+        pageWrap.className = "pdf-page";
+  
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+  
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+  
+        pageWrap.appendChild(canvas);
+        viewer.appendChild(pageWrap);
+  
+        await page.render({
+          canvasContext: context,
+          viewport
+        }).promise;
+      }
+  
+      status.style.display = "none";
+    }
+  
+    async function init() {
       try {
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const pdf = await loadingTask.promise;
-
-        status.textContent = `총 ${pdf.numPages}페이지 불러오는 중...`;
-
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-
-          const unscaledViewport = page.getViewport({ scale: 1 });
-          const containerWidth = Math.min(viewer.clientWidth || 900, 900);
-          const scale = containerWidth / unscaledViewport.width;
-          const viewport = page.getViewport({ scale });
-
-          const pageWrap = document.createElement("div");
-          pageWrap.className = "pdf-page";
-
-          const canvas = document.createElement("canvas");
-          const context = canvas.getContext("2d");
-
-          canvas.width = Math.floor(viewport.width);
-          canvas.height = Math.floor(viewport.height);
-
-          pageWrap.appendChild(canvas);
-          viewer.appendChild(pageWrap);
-
-          await page.render({
-            canvasContext: context,
-            viewport
-          }).promise;
+        const config = await loadConfig();
+        const pdfFile = config.currentPdf;
+  
+        if (!pdfFile) {
+          throw new Error("config.json에 currentPdf 값이 없습니다.");
         }
-
-        status.style.display = "none";
+  
+        await renderPDF(pdfFile);
       } catch (err) {
         console.error(err);
         status.className = "error";
@@ -181,8 +206,8 @@
         `;
       }
     }
-
-    renderPDF();
+  
+    init();
   </script>
 </body>
 </html>
