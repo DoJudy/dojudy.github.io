@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CV</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -169,8 +168,8 @@
         throw new Error("config.json에 pdf 값이 없습니다.");
       }
 
-      document.title = config.title || "CV";
-      titleEl.textContent = config.title || "CV";
+      // document.title = config.title || "CV";
+      // titleEl.textContent = config.title || "CV";
       noteEl.innerHTML = config.note || "";
 
       openBtn.href = pdfFile;
